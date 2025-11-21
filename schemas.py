@@ -2,47 +2,46 @@
 Database Schemas
 
 Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
 Each Pydantic model represents a collection in your database.
 Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+- Project -> "project"
+- Asset -> "asset"
+- Render -> "render"
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Example schemas (replace with your own):
+class Project(BaseModel):
+    title: str = Field(..., description="Project title")
+    description: Optional[str] = Field(None, description="Project description")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+class Asset(BaseModel):
+    project_id: str = Field(..., description="Related project id")
+    filename: str = Field(..., description="Original filename")
+    path: str = Field(..., description="Server path to file")
+    url: str = Field(..., description="Public URL to access the file")
+    kind: str = Field(..., description="video | audio | image")
+    duration: Optional[float] = Field(None, description="Duration in seconds for media that has it")
+    width: Optional[int] = None
+    height: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Render(BaseModel):
+    project_id: str = Field(...)
+    asset_id: str = Field(...)
+    start: float = Field(0, ge=0)
+    end: Optional[float] = Field(None)
+    speed: float = Field(1.0, gt=0)
+    volume: float = Field(1.0, ge=0)
+    rotate: int = Field(0, description="Rotation degrees: 0,90,180,270")
+    resolution_width: Optional[int] = Field(None)
+    resolution_height: Optional[int] = Field(None)
+    status: str = Field("pending")
+    output_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
